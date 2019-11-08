@@ -24,7 +24,7 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 logger = logging.getLogger(__name__)
 
 env_vars = {
-    'OPS_LIST': 'OPS_LIST env var is required. Example: OPS_LIST=@ultradesu,@username2',
+    'OPS_LIST': 'OPS_LIST env var is required. Example: OPS_LIST=@ultradesu,@username2,144178090',
     'TG_TOKEN': 'TG_TOKEN env var is required. Example: TG_TOKEN=<bot_token>',
     'ALLOWED_CHAT': 'ALLOWED_CHAT env var is required. Example: ALLOWED_CHAT=<-380465766>',
 }
@@ -117,8 +117,11 @@ def roll(update, context):
     for ops in config['OPS_LIST']:
         result[ops] = randint(1, 100)
     result = sorted(result.items(),key=operator.itemgetter(1),reverse=False)
+# [%s](tg://user?id=%s) 
     body = ""
     for user, score in result:
+        if user.isdigit():
+            user = f"[{user}](tg://user?id={user})"
         body += f'\n{user}: {score}'
     bot.edit_message_text(chat_id=update.message.chat_id,
                       message_id=message_id.message_id,
