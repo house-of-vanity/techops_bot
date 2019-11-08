@@ -50,6 +50,9 @@ bot = Bot(config['TG_TOKEN'])
 opses = list()
 try:
     for ops in config['OPS_LIST'].split(','):
+        if ops.isdigit():
+            name = bot.get_chat_member(config['ALLOWED_CHAT'], ops)['user']['first_name']
+            ops=f"[{name}](tg://user?id={ops})"
         opses.append(ops)
 except Exception as error:
     logger.error(f"Can't parse OPS_LIST env var: {error}")
@@ -77,6 +80,7 @@ def restricted(func):
 help_text = f"""This bot will choose your destiny.
 
 *Configured Ops list:*
+
 {', '.join(config['OPS_LIST'])}
 
 *Commands:*
@@ -98,18 +102,20 @@ def roll(update, context):
     bot.sendChatAction(
         chat_id=update.message.chat_id, action=ChatAction.TYPING
     )
-    message_id = update.message.reply_text(f"Rolling.")
+    message_id = update.message.reply_markdown(f"_Rolling._")
     sleep(1)
     bot.edit_message_text(chat_id=update.message.chat_id,
+                      parse_mode='Markdown',
                       message_id=message_id.message_id,
-                      text='Rolling..',)
+                      text='_Rolling.._',)
     bot.sendChatAction(
         chat_id=update.message.chat_id, action=ChatAction.TYPING
     )
     sleep(1)
     bot.edit_message_text(chat_id=update.message.chat_id,
+                      parse_mode='Markdown',
                       message_id=message_id.message_id,
-                      text='Rolling...',)
+                      text='_Rolling..._',)
     bot.sendChatAction(
         chat_id=update.message.chat_id, action=ChatAction.TYPING
     )
@@ -117,13 +123,13 @@ def roll(update, context):
     for ops in config['OPS_LIST']:
         result[ops] = randint(1, 100)
     result = sorted(result.items(),key=operator.itemgetter(1),reverse=False)
-# [%s](tg://user?id=%s) 
     body = ""
     for user, score in result:
         if user.isdigit():
             user = f"[{user}](tg://user?id={user})"
         body += f'\n{user}: {score}'
     bot.edit_message_text(chat_id=update.message.chat_id,
+                      parse_mode='Markdown',
                       message_id=message_id.message_id,
                       text=f"Result: {body}",)
 
